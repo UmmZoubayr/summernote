@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summernote avec Firebase</title>
+    <title>Éditeur Summernote</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -17,33 +17,79 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         #editor { width: 100%; height: 300px; }
-        input, button { margin-top: 10px; padding: 10px; font-size: 16px; display: block; width: 100%; }
+        button { margin-top: 10px; padding: 10px; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <h2>Éditeur d'Articles</h2>
-
-    <input type="text" id="title" placeholder="Titre de l'article" readonly>
-    <input type="text" id="author" placeholder="Nom de l’auteur" readonly>
-    
+    <h2>Éditeur d'Article</h2>
     <textarea id="editor">Chargement...</textarea>
-
     <button onclick="saveContent()">💾 Enregistrer</button>
 
     <script>
         // 🔥 Configuration Firebase (REMPLACE avec TES infos Firebase)
-       const firebaseConfig = {
-            apiKey: "AIzaSyAwpH9bjZcnzKX9-lrikBuDO8-Zm-YUdXY",
-            projectId: "muslima-corner-735f2",
-            storageBucket: "muslima-corner-735f2.appspot.com",
-            appId: "1:765114208709:android:c090ac011f7d2b75837bac"
+        const firebaseConfig = {
+            apiKey: "TON_API_KEY",
+            projectId: "TON_PROJECT_ID",
+            storageBucket: "TON_STORAGE_BUCKET",
+            appId: "TON_APP_ID"
         };
-
 
         // ✅ Initialisation Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        let articleID = ""; // Variable pour stocker l'ID de l'article
+
+        // ✅ Fonction pour recevoir l'ID de l'article depuis FlutterFlow
+        function setArticleID(id) {
+            articleID = id;
+            console.log("✅ Article ID reçu:", articleID);
+            loadContent(); // Charger le contenu s'il existe déjà
+        }
+
+        // ✅ Charger le contenu existant depuis Firestore
+        function loadContent() {
+            if (!articleID) {
+                console.warn("⚠️ Aucun ID d'article fourni.");
+                return;
+            }
+
+            db.collection("Articles").doc(articleID).get()
+            .then((doc) => {
+                if (doc.exists) {
+                    console.log("📄 Contenu chargé :", doc.data().content);
+                    $('#editor').summernote('code', doc.data().content);
+                } else {
+                    console.log("⚠️ Aucun contenu trouvé, démarrage d'un nouvel article.");
+                }
+            })
+            .catch((error) => { 
+                console.error("❌ Erreur de chargement:", error);
+            });
+        }
+
+        // ✅ Enregistrer/Mise à jour du contenu dans Firestore
+        function saveContent() {
+            var content = $('#editor').summernote('code');
+
+            if (!articleID) {
+                alert("❌ Erreur : Aucun ID d’article reçu !");
+                return;
+            }
+
+            db.collection("Articles").doc(articleID).update({
+                content: content
+            })
+            .then(() => { 
+                alert("✅ Article mis à jour avec succès !");
+                console.log("✅ Firestore: Mise à jour réussie !");
+            })
+            .catch((error) => { 
+                console.error("❌ Erreur de mise à jour:", error);
+                alert("❌ Erreur: " + error.message);
+            });
+        }
 
         // 🌍 Initialiser Summernote
         $(document).ready(function() {
@@ -60,38 +106,6 @@
             });
         });
 
-        // ✅ Fonction pour recevoir titre + auteur de FlutterFlow
-        function setArticleInfo(title, author) {
-            document.getElementById("title").value = title;
-            document.getElementById("author").value = author;
-        }
-
-        // ✅ Enregistrer l'article dans Firestore directement
-        function saveContent() {
-            var title = document.getElementById("title").value;
-            var author = document.getElementById("author").value;
-            var content = $('#editor').summernote('code');
-
-            if (!title || !author) {
-                alert("⚠️ Veuillez d'abord entrer un titre et un auteur !");
-                return;
-            }
-
-            db.collection("Articles").add({
-                title: title,
-                author: author,
-                content: content,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => { 
-                alert("✅ Article enregistré avec succès !");
-                console.log("✅ Firestore: Enregistrement réussi !");
-            })
-            .catch((error) => { 
-                console.error("❌ Erreur d'enregistrement:", error);
-                alert("❌ Erreur: " + error.message);
-            });
-        }
     </script>
 
 </body>
