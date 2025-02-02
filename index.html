@@ -30,7 +30,6 @@
     <textarea id="editor">Chargement...</textarea>
 
     <button onclick="saveContent()">💾 Enregistrer</button>
-    <button onclick="loadContent()">📂 Charger</button>
 
     <script>
         // 🔥 Configuration Firebase (REMPLACE avec TES infos Firebase)
@@ -58,12 +57,9 @@
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ]
             });
-
-            // Charger l'article existant au démarrage
-            loadContent();
         });
 
-        // ✅ Enregistrer l'article avec le titre et l’auteur dans Firestore
+        // ✅ Enregistrer l'article dans Firestore directement
         function saveContent() {
             var title = document.getElementById("title").value;
             var author = document.getElementById("author").value;
@@ -89,23 +85,8 @@
                 alert("❌ Erreur: " + error.message);
             });
         }
-
-        // ✅ Charger l'article depuis Firestore (dernier article ajouté)
-        function loadContent() {
-            db.collection("Articles").orderBy("createdAt", "desc").limit(1).get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    document.getElementById("title").value = doc.data().title;
-                    document.getElementById("author").value = doc.data().author;
-                    $('#editor').summernote('code', doc.data().content);
-                });
-            })
-            .catch((error) => { 
-                console.error("❌ Erreur de chargement:", error);
-                alert("❌ Erreur: " + error.message);
-            });
-        }
     </script>
 
 </body>
 </html>
+
