@@ -5,25 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Summernote avec Firebase</title>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
     <!-- Summernote -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.js"></script>
 
-    <!-- 🔥 Import Firebase SDKs en mode script (CORRECT) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         #editor { width: 100%; height: 300px; }
-        button { margin-top: 10px; padding: 10px; font-size: 16px; }
+        input, button { margin-top: 10px; padding: 10px; font-size: 16px; display: block; width: 100%; }
     </style>
 </head>
 <body>
 
     <h2>Éditeur d'Articles</h2>
+
+    <input type="text" id="title" placeholder="Titre de l'article">
+    <input type="text" id="author" placeholder="Nom de l’auteur">
+    
     <textarea id="editor">Chargement...</textarea>
+
     <button onclick="saveContent()">💾 Enregistrer</button>
     <button onclick="loadContent()">📂 Charger</button>
 
@@ -36,7 +41,7 @@
             appId: "1:765114208709:android:c090ac011f7d2b75837bac"
         };
 
-        // ✅ Initialisation correcte de Firebase
+        // ✅ Initialisation Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -58,13 +63,22 @@
             loadContent();
         });
 
-        // ✅ Enregistrer l'article dans Firestore
+        // ✅ Enregistrer l'article avec le titre et l’auteur dans Firestore
         function saveContent() {
+            var title = document.getElementById("title").value;
+            var author = document.getElementById("author").value;
             var content = $('#editor').summernote('code');
-            console.log("🔄 Enregistrement en cours...", content);
 
-            db.collection("Articles").doc("article1").set({
-                content: content
+            if (!title || !author) {
+                alert("⚠️ Veuillez remplir tous les champs !");
+                return;
+            }
+
+            db.collection("Articles").add({
+                title: title,
+                author: author,
+                content: content,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => { 
                 alert("✅ Article enregistré avec succès !");
@@ -76,18 +90,15 @@
             });
         }
 
-        // ✅ Charger l'article depuis Firestore
+        // ✅ Charger l'article depuis Firestore (dernier article ajouté)
         function loadContent() {
-            console.log("🔄 Chargement de l'article...");
-
-            db.collection("Articles").doc("article1").get()
-            .then((doc) => {
-                if (doc.exists) {
+            db.collection("Articles").orderBy("createdAt", "desc").limit(1).get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    document.getElementById("title").value = doc.data().title;
+                    document.getElementById("author").value = doc.data().author;
                     $('#editor').summernote('code', doc.data().content);
-                    console.log("✅ Firestore: Chargement réussi !");
-                } else {
-                    alert("⚠️ Aucun article trouvé !");
-                }
+                });
             })
             .catch((error) => { 
                 console.error("❌ Erreur de chargement:", error);
