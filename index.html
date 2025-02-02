@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summernote in FlutterFlow</title>
+    <title>Summernote Editor</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
@@ -22,28 +22,29 @@
 </head>
 <body>
 
-    <h2>Summernote Editor</h2>
-    <textarea id="editor">Loading...</textarea>
-    <button onclick="saveContent()">Save to Firebase</button>
+    <h2>Éditeur d'Articles</h2>
+    <textarea id="editor">Chargement...</textarea>
+    <button onclick="saveContent()">💾 Enregistrer</button>
+    <button onclick="loadContent()">📂 Charger</button>
 
     <script>
-        // 🔥 Initialize Firebase (Replace with Your Firebase Config)
+        // 🔥 Configuration Firebase (Remplace avec TES infos Firebase)
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "TON_API_KEY",
+            authDomain: "TON_PROJECT_ID.firebaseapp.com",
+            projectId: "TON_PROJECT_ID",
+            storageBucket: "TON_PROJECT_ID.appspot.com",
+            messagingSenderId: "TON_SENDER_ID",
+            appId: "TON_APP_ID"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 🌍 Initialize Summernote
+        // 🌍 Initialiser Summernote
         $(document).ready(function() {
             $('#editor').summernote({
                 height: 300,
-                placeholder: 'Type here...',
+                placeholder: 'Rédige ton article ici...',
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     ['font', ['fontsize', 'color']],
@@ -53,21 +54,32 @@
                 ]
             });
 
-            // 🔄 Load Content from Firestore
-            db.collection("documents").doc("user_text")
-                .get().then((doc) => {
-                    if (doc.exists) {
-                        $('#editor').summernote('code', doc.data().content);
-                    }
-                });
+            // 🔄 Charger le dernier article sauvegardé
+            loadContent();
         });
 
-        // 💾 Save Content to Firestore
+        // 💾 Enregistrer l'article dans Firestore (Collection: Articles, Champ: content)
         function saveContent() {
             var content = $('#editor').summernote('code');
-            db.collection("documents").doc("user_text").set({ content: content })
-                .then(() => { alert("Text saved successfully!"); })
-                .catch((error) => { console.error("Error saving text: ", error); });
+
+            db.collection("Articles").doc("article1").set({
+                content: content
+            })
+            .then(() => { alert("✅ Article enregistré avec succès !"); })
+            .catch((error) => { console.error("❌ Erreur lors de l'enregistrement:", error); });
+        }
+
+        // 📂 Charger l'article depuis Firestore
+        function loadContent() {
+            db.collection("Articles").doc("article1").get()
+            .then((doc) => {
+                if (doc.exists) {
+                    $('#editor').summernote('code', doc.data().content);
+                } else {
+                    alert("⚠️ Aucun article trouvé !");
+                }
+            })
+            .catch((error) => { console.error("❌ Erreur de chargement:", error); });
         }
     </script>
 
