@@ -28,7 +28,7 @@
 
     <script>
         // 🔥 Configuration Firebase (REMPLACE avec TES infos Firebase)
-         const firebaseConfig = {
+       const firebaseConfig = {
             apiKey: "AIzaSyAwpH9bjZcnzKX9-lrikBuDO8-Zm-YUdXY",
             projectId: "muslima-corner-735f2",
             storageBucket: "muslima-corner-735f2.appspot.com",
@@ -43,9 +43,15 @@
 
         // ✅ Fonction pour recevoir l'ID de l'article depuis FlutterFlow
         function setArticleID(id) {
-            articleID = id;
-            console.log("✅ Article ID reçu:", articleID);
-            loadContent(); // Charger le contenu s'il existe déjà
+            console.log("📩 ID reçu avant validation:", id);
+            
+            if (id && id.trim() !== "") {
+                articleID = id;
+                console.log("✅ Article ID correctement enregistré:", articleID);
+                loadContent(); // Charger le contenu si l'ID est valide
+            } else {
+                console.warn("⚠️ Aucun ID d'article valide reçu !");
+            }
         }
 
         // ✅ Charger le contenu existant depuis Firestore
