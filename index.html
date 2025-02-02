@@ -24,8 +24,8 @@
 
     <h2>Éditeur d'Articles</h2>
 
-    <input type="text" id="title" placeholder="Titre de l'article">
-    <input type="text" id="author" placeholder="Nom de l’auteur">
+    <input type="text" id="title" placeholder="Titre de l'article" readonly>
+    <input type="text" id="author" placeholder="Nom de l’auteur" readonly>
     
     <textarea id="editor">Chargement...</textarea>
 
@@ -33,12 +33,13 @@
 
     <script>
         // 🔥 Configuration Firebase (REMPLACE avec TES infos Firebase)
-        const firebaseConfig = {
+       const firebaseConfig = {
             apiKey: "AIzaSyAwpH9bjZcnzKX9-lrikBuDO8-Zm-YUdXY",
             projectId: "muslima-corner-735f2",
             storageBucket: "muslima-corner-735f2.appspot.com",
             appId: "1:765114208709:android:c090ac011f7d2b75837bac"
         };
+
 
         // ✅ Initialisation Firebase
         firebase.initializeApp(firebaseConfig);
@@ -59,6 +60,12 @@
             });
         });
 
+        // ✅ Fonction pour recevoir titre + auteur de FlutterFlow
+        function setArticleInfo(title, author) {
+            document.getElementById("title").value = title;
+            document.getElementById("author").value = author;
+        }
+
         // ✅ Enregistrer l'article dans Firestore directement
         function saveContent() {
             var title = document.getElementById("title").value;
@@ -66,7 +73,7 @@
             var content = $('#editor').summernote('code');
 
             if (!title || !author) {
-                alert("⚠️ Veuillez remplir tous les champs !");
+                alert("⚠️ Veuillez d'abord entrer un titre et un auteur !");
                 return;
             }
 
@@ -89,4 +96,3 @@
 
 </body>
 </html>
-
