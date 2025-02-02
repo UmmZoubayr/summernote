@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summernote Editor</title>
+    <title>Summernote avec Firebase</title>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
     <!-- Summernote -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-lite.min.js"></script>
+
+    <!-- 🔥 Import Firebase SDKs en mode script (CORRECT) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -28,13 +28,15 @@
     <button onclick="loadContent()">📂 Charger</button>
 
     <script>
-        // 🔥 Configuration Firebase (Remplace avec TES infos Firebase)
-      const firebaseConfig = {
-    apiKey: "AIzaSyAwpH9bjZcnzKX9-lrikBuDO8-Zm-YUdXY",
-    projectId: "muslima-corner-735f2",
-    storageBucket: "muslima-corner-735f2.appspot.com",
-    appId: "muslima-corner-735f2"
-};
+        // 🔥 Configuration Firebase (REMPLACE avec TES infos Firebase)
+        const firebaseConfig = {
+            apiKey: "TON_API_KEY",
+            projectId: "TON_PROJECT_ID",
+            storageBucket: "TON_STORAGE_BUCKET",
+            appId: "TON_APP_ID"
+        };
+
+        // ✅ Initialisation correcte de Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -42,7 +44,7 @@
         $(document).ready(function() {
             $('#editor').summernote({
                 height: 300,
-                placeholder: 'Rédige ton article ici...',
+                placeholder: 'Écris ton article ici...',
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     ['font', ['fontsize', 'color']],
@@ -52,32 +54,45 @@
                 ]
             });
 
-            // 🔄 Charger le dernier article sauvegardé
+            // Charger l'article existant au démarrage
             loadContent();
         });
 
-        // 💾 Enregistrer l'article dans Firestore (Collection: Articles, Champ: content)
+        // ✅ Enregistrer l'article dans Firestore
         function saveContent() {
             var content = $('#editor').summernote('code');
+            console.log("🔄 Enregistrement en cours...", content);
 
             db.collection("Articles").doc("article1").set({
                 content: content
             })
-            .then(() => { alert("✅ Article enregistré avec succès !"); })
-            .catch((error) => { console.error("❌ Erreur lors de l'enregistrement:", error); });
+            .then(() => { 
+                alert("✅ Article enregistré avec succès !");
+                console.log("✅ Firestore: Enregistrement réussi !");
+            })
+            .catch((error) => { 
+                console.error("❌ Erreur d'enregistrement:", error);
+                alert("❌ Erreur: " + error.message);
+            });
         }
 
-        // 📂 Charger l'article depuis Firestore
+        // ✅ Charger l'article depuis Firestore
         function loadContent() {
+            console.log("🔄 Chargement de l'article...");
+
             db.collection("Articles").doc("article1").get()
             .then((doc) => {
                 if (doc.exists) {
                     $('#editor').summernote('code', doc.data().content);
+                    console.log("✅ Firestore: Chargement réussi !");
                 } else {
                     alert("⚠️ Aucun article trouvé !");
                 }
             })
-            .catch((error) => { console.error("❌ Erreur de chargement:", error); });
+            .catch((error) => { 
+                console.error("❌ Erreur de chargement:", error);
+                alert("❌ Erreur: " + error.message);
+            });
         }
     </script>
 
